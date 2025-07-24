@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Usuarios | Sistema de Cheques</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6 text-gray-800">
+  <div class="max-w-5xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4 text-center text-blue-900">Usuarios de la Empresa</h1>
+
+    <div class="flex justify-between mb-4">
+      <span class="text-gray-600">Solo visibles para administradores</span>
+      <button id="btnNuevoUsuario" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">Nuevo usuario</button>
+    </div>
+
+    <table class="min-w-full table-auto border">
+      <thead class="bg-blue-100 text-left">
+        <tr>
+          <th class="px-4 py-2">Nombre</th>
+          <th class="px-4 py-2">Correo</th>
+          <th class="px-4 py-2">Rol</th>
+        </tr>
+      </thead>
+      <tbody id="usuariosTabla" class="text-sm"></tbody>
+    </table>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+    <div class="bg-white p-6 rounded shadow max-w-sm w-full">
+      <h2 class="text-xl font-bold mb-4">Agregar nuevo usuario</h2>
+      <form id="formNuevoUsuario" class="space-y-3">
+        <input name="nombre" type="text" placeholder="Nombre" required class="w-full border p-2 rounded" />
+        <input name="email" type="email" placeholder="Correo" required class="w-full border p-2 rounded" />
+        <input name="password" type="password" placeholder="Contraseña" required class="w-full border p-2 rounded" />
+        <select name="rol" class="w-full border p-2 rounded" required>
+          <option value="editor">Editor</option>
+          <option value="viewer">Viewer</option>
+        </select>
+        <div class="flex justify-end gap-2">
+          <button type="button" id="cancelar" class="px-3 py-1 rounded bg-gray-300">Cancelar</button>
+          <button type="submit" class="bg-blue-600 text-white px-4 py-1 rounded">Crear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, getDocs, addDoc, doc, getDoc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB3dRxrIpaThXzlbSoF3N0XQi5b-F2JIL8",
+      authDomain: "generador-de-cheques.firebaseapp.com",
+      projectId: "generador-de-cheques",
+      storageBucket: "generador-de-cheques.appspot.com",
+      messagingSenderId: "1075123660824",
+      appId: "1:1075123660824:web:1338f19bac51e2833e3b6d",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const modal = document.getElementById("modal");
+    const btnNuevo = document.getElementById("btnNuevoUsuario");
+    const cancelar = document.getElementById("cancelar");
+    const formNuevo = document.getElementById("formNuevoUsuario");
+    const tabla = document.getElementById("usuariosTabla");
+
+    let empresa = "";
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return location.href = "login.html";
+
+      const userRef = doc(db, "usuarios", user.uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists() || userSnap.data().rol !== "admin") {
+        alert("No tienes permisos para ver esta sección");
+        return location.href = "index.html";
+      }
+
+      empresa = userSnap.data().empresa;
+      const q = query(collection(db, "usuarios"), where("empresa", "==", empresa));
+      const usuariosSnap = await getDocs(q);
+
+      tabla.innerHTML = "";
+      usuariosSnap.forEach(docu => {
+        const u = docu.data();
+        tabla.innerHTML += `<tr>
+          <td class="px-4 py-2">${u.nombre || "(Sin nombre)"}</td>
+          <td class="px-4 py-2">${u.email}</td>
+          <td class="px-4 py-2">${u.rol}</td>
+        </tr>`;
+      });
+    });
+
+    btnNuevo.onclick = () => modal.classList.remove("hidden", "items-center", "justify-center");
+    cancelar.onclick = () => modal.classList.add("hidden");
+
+    formNuevo.onsubmit = async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(formNuevo));
+
+  const adminUser = auth.currentUser; // Guarda sesión actual del admin
+
+  try {
+    // Crea el nuevo usuario (esto cambia la sesión)
+    const cred = await createUserWithEmailAndPassword(auth, data.email, data.password);
+
+    // Guarda su info en la colección 'usuarios'
+    await setDoc(doc(db, "usuarios", cred.user.uid), {
+      nombre: data.nombre,
+      email: data.email,
+      rol: data.rol,
+      empresa
+    });
+
+    alert("✅ Usuario creado exitosamente");
+
+    // Volver a loguear como admin
+    await auth.signOut();
+    await signInWithEmailAndPassword(auth, adminUser.email, prompt("Por seguridad, ingresa nuevamente tu contraseña de administrador"));
+
+    location.reload(); // Actualiza la lista
+  } catch (e) {
+    alert("❌ Error: " + e.message);
+  }
+};
+
+  </script>
+</body>
+</html>

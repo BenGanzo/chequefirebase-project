@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prueba Firebase Firestore</title>
+</head>
+<body>
+  <h1>Prueba de Firestore</h1>
+  <button id="guardarBtn">Guardar Documento de Prueba</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMPR8Q0i6xCrJUzA0Eh6IR0i19-qoluhQ",
+      authDomain: "sample-firebase-ai-app-b7634.firebaseapp.com",
+      projectId: "sample-firebase-ai-app-b7634",
+      storageBucket: "sample-firebase-ai-app-b7634.appspot.com",
+      messagingSenderId: "70826301427",
+      appId: "1:70826301427:web:5fd7bfa7d6522fe827e486"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const boton = document.getElementById('guardarBtn');06:19 p. m. 09/05/2025
+    boton.addEventListener('click', async () => {
+      try {
+        const docRef = await addDoc(collection(db, "pruebas"), {
+          mensaje: "Hola desde Firestore",
+          fecha: new Date().toISOString()
+        });
+        console.log("✅ Documento guardado con ID:", docRef.id);
+        alert("✅ Documento guardado correctamente.");
+      } catch (e) {
+        console.error("❌ Error al guardar:", e);
+        alert("❌ No se pudo guardar en Firestore. Ver consola.");
+      }
+    });
+  </script>
+</body>
+</html>

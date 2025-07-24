@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Crear cuenta</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-8 rounded shadow-md w-full max-w-md">
+    <h2 class="text-2xl font-bold text-center text-blue-900 mb-4">Crear cuenta</h2>
+    <form id="registerForm" class="space-y-4">
+      <input name="empresa" type="text" placeholder="Nombre de la empresa" class="w-full border p-2 rounded" required />
+      <input name="email" type="email" placeholder="Correo electrónico" class="w-full border p-2 rounded" required />
+      <input name="password" type="password" placeholder="Contraseña" class="w-full border p-2 rounded" required />
+
+      <select name="rol" class="w-full border p-2 rounded" required>
+        <option value="" disabled selected>Selecciona un rol</option>
+        <option value="admin">Administrador</option>
+        <option value="usuario">Usuario</option>
+      </select>
+
+      <button type="submit" class="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600">
+        Registrar
+      </button>
+    </form>
+    <p class="text-center mt-4 text-sm">¿Ya tienes cuenta? <a href="login.html" class="text-blue-600">Iniciar sesión</a></p>
+  </div>
+
+  <!-- 🔌 Script de Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMPR8Q0i6xCrJUzA0Eh6IR0i19-qoluhQ",
+      authDomain: "sample-firebase-ai-app-b7634.firebaseapp.com",
+      projectId: "sample-firebase-ai-app-b7634",
+      storageBucket: "sample-firebase-ai-app-b7634.appspot.com",
+      messagingSenderId: "70826301427",
+      appId: "1:70826301427:web:5fd7bfa7d6522fe827e486"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const form = document.getElementById("registerForm");
+
+    let adminEmail = "";
+    let adminPassword = "";
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return location.href = "login.html";
+
+      const ref = doc(db, "usuarios", user.uid);
+      const snap = await getDoc(ref);
+      if (!snap.exists() || snap.data().rol !== "admin") {
+        alert("Acceso denegado. Solo los administradores pueden crear cuentas.");
+        return location.href = "index.html";
+      }
+
+      adminEmail = user.email;
+      const contraseña = prompt("🔐 Ingresa tu contraseña para continuar:");
+      if (!contraseña) {
+        alert("Cancelado.");
+        return location.href = "index.html";
+      }
+      adminPassword = contraseña;
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const empresa = form.empresa.value.trim();
+      const email = form.email.value.trim();
+      const password = form.password.value;
+      const rol = form.rol.value;
+
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = cred.user.uid;
+
+        await setDoc(doc(db, "usuarios", uid), {
+          empresa,
+          rol
+        });
+
+        await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
+
+        alert("✅ Usuario creado con éxito.");
+        form.reset();
+      } catch (err) {
+        alert("❌ Error: " + err.message);
+      }
+    });
+  </script>
+</body>
+</html>

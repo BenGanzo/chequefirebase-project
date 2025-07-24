@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Iniciar Sesión</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-8 rounded shadow-md w-full max-w-sm">
+    <h1 class="text-2xl font-bold text-center mb-6">Iniciar Sesión</h1>
+    <form id="loginForm" class="space-y-4">
+      <input type="email" name="email" placeholder="Correo electrónico" required class="w-full p-2 border rounded" />
+      <input type="password" name="password" placeholder="Contraseña" required class="w-full p-2 border rounded" />
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Entrar</button>
+    </form>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMPR8Q0i6xCrJUzA0Eh6IR0i19-qoluhQ",
+      authDomain: "sample-firebase-ai-app-b7634.firebaseapp.com",
+      projectId: "sample-firebase-ai-app-b7634",
+      storageBucket: "sample-firebase-ai-app-b7634.appspot.com",
+      messagingSenderId: "70826301427",
+      appId: "1:70826301427:web:5fd7bfa7d6522fe827e486"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const loginForm = document.getElementById("loginForm");
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = loginForm.email.value;
+      const password = loginForm.password.value;
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = "index.html";
+      } catch (error) {
+        alert("❌ Error al iniciar sesión: " + error.message);
+      }
+    });
+  </script>
+</body>
+</html>

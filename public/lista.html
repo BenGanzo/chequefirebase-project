@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lista de Cheques</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    @media print {
+      body *:not(#reportPrintArea):not(#reportPrintArea *) {
+        display: none !important;
+      }
+      #reportPrintArea {
+        display: block !important;
+        padding: 2rem;
+        font-size: 14px;
+      }
+      #reportPrintArea table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      #reportPrintArea th,
+      #reportPrintArea td {
+        border: 1px solid #000;
+        padding: 6px;
+        text-align: left;
+      }
+      #reportPrintArea h2 {
+        margin-bottom: 1rem;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 p-6">
+  <!-- 🔴 Botón de logout -->
+  <div class="flex justify-end mb-4">
+    <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+      Cerrar sesión
+    </button>
+  </div>
+
+  <div class="max-w-7xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4 flex items-center gap-2">📋 Lista de Cheques</h1>
+
+    <!-- Filtros -->
+    <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 mb-4">
+      <input id="filterPayee" type="text" placeholder="Filtrar por Payee" class="border px-2 py-1 rounded" />
+      <input id="filterSettlement" type="text" placeholder="Filtrar por Settlement #" class="border px-2 py-1 rounded" />
+      <input id="filterCheckNum" type="text" placeholder="Filtrar por Check #" class="border px-2 py-1 rounded" />
+      <input id="filterStartDate" type="date" class="border px-2 py-1 rounded" />
+      <input id="filterEndDate" type="date" class="border px-2 py-1 rounded" />
+    </div>
+
+    <button id="applyFilters" class="w-full bg-blue-600 text-white py-2 rounded mb-4">Aplicar Filtros</button>
+
+<div class="overflow-x-auto">
+  <table id="chequeTable" class="w-full table-auto border border-gray-200 divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr class="divide-x divide-gray-200">
+        <th class="px-4 py-2 text-center"><input type="checkbox" id="selectAll" /></th>
+        <th class="px-4 py-2 text-left">Payee</th>
+        <th class="px-4 py-2 text-left">Company</th>
+        <th class="px-4 py-2 text-center">Settlement</th>
+        <th class="px-4 py-2 text-center">Check #</th>
+        <th id="sortDateHeader" class="px-4 py-2 text-center cursor-pointer hover:bg-gray-100">
+          Date <span id="dateSortIcon">⬇️</span>
+        </th>
+        <th class="px-4 py-2 text-right">Amount</th>
+        <th class="px-4 py-2 text-center">Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody" class="divide-y divide-gray-100">
+      <!-- filas generadas -->
+    </tbody>
+  </table>
+</div>
+
+
+
+    <!-- Controles -->
+    <div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <button onclick="window.location.href='index.html'" class="bg-blue-100 px-4 py-2 rounded border flex items-center gap-1">
+        🔙 Volver
+      </button>
+
+      <p class="font-semibold text-right w-full sm:w-auto">Total: $<span id="totalAmount">0.00</span></p>
+
+      <div class="flex gap-3">
+        <button id="printSelected" class="bg-blue-700 text-white px-4 py-2 rounded flex items-center gap-2">
+          🖨️ Imprimir seleccionados
+        </button>
+        <button id="printFilteredList" class="bg-green-700 text-white px-4 py-2 rounded flex items-center gap-2">
+          📄 Imprimir lista filtrada
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Área impresión -->
+  <div id="reportPrintArea" class="hidden print:block"></div>
+
+  <!-- Orden por fecha -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const sortDateHeader = document.getElementById('sortDateHeader');
+      const dateSortIcon = document.getElementById('dateSortIcon');
+
+      const savedSortAsc = localStorage.getItem('sortDateAsc') === 'true';
+      dateSortIcon.textContent = savedSortAsc ? '⬆️' : '⬇️';
+
+      sortDateHeader.addEventListener('click', () => {
+        const current = localStorage.getItem('sortDateAsc') === 'true';
+        const newValue = !current;
+        localStorage.setItem('sortDateAsc', newValue);
+        dateSortIcon.textContent = newValue ? '⬆️' : '⬇️';
+        if (typeof renderTable === 'function') renderTable();
+      });
+    });
+  </script>
+
+  <!-- Firebase y logout -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import {
+      getFirestore
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMPR8Q0i6xCrJUzA0Eh6IR0i19-qoluhQ",
+      authDomain: "sample-firebase-ai-app-b7634.firebaseapp.com",
+      projectId: "sample-firebase-ai-app-b7634",
+      storageBucket: "sample-firebase-ai-app-b7634.appspot.com",
+      messagingSenderId: "70826301427",
+      appId: "1:70826301427:web:5fd7bfa7d6522fe827e486"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // Protección de sesión
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+
+    // Logout
+    const logoutBtn = document.getElementById("logoutBtn");
+    logoutBtn?.addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.href = "login.html";
+    });
+  </script>
+
+  <!-- Script principal -->
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>

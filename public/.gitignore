@@ -1,0 +1,9 @@
+# 🚫 Archivos sensibles
+firebase-config.js
+firebase.json
+.env
+
+# 🧹 Archivos del sistema/editor
+node_modules/
+.vscode/
+.DS_Store

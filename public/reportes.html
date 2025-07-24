@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reporte de Cheques</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen p-6">
+  <div class="max-w-6xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4">📊 Reporte de Cheques</h1>
+
+    <div class="grid md:grid-cols-4 gap-4 mb-6">
+      <input type="text" id="filterPayee" class="border p-2 rounded" placeholder="Buscar por Payee" />
+      <input type="date" id="filterStart" class="border p-2 rounded" />
+      <input type="date" id="filterEnd" class="border p-2 rounded" />
+      <button id="filterBtn" class="bg-blue-600 text-white px-4 py-2 rounded">Aplicar Filtros</button>
+    </div>
+
+    <div class="mb-4">
+      <p><strong>Total Cheques:</strong> <span id="totalCount">0</span></p>
+      <p><strong>Total Pagado:</strong> $<span id="totalAmount">0.00</span></p>
+    </div>
+
+    <div class="overflow-auto max-h-[500px] border rounded">
+      <table class="min-w-full text-sm text-left">
+        <thead class="bg-gray-200 sticky top-0">
+          <tr>
+            <th class="p-2">Cheque #</th>
+            <th class="p-2">Payee</th>
+            <th class="p-2">Fecha</th>
+            <th class="p-2">Monto</th>
+            <th class="p-2">Settlement</th>
+          </tr>
+        </thead>
+        <tbody id="resultsTable" class="divide-y"></tbody>
+      </table>
+    </div>
+
+    <div class="mt-6">
+      <button id="downloadCSV" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        Descargar CSV
+      </button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      query,
+      where,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMPR8Q0i6xCrJUzA0Eh6IR0i19-qoluhQ",
+      authDomain: "sample-firebase-ai-app-b7634.firebaseapp.com",
+      projectId: "sample-firebase-ai-app-b7634",
+      storageBucket: "sample-firebase-ai-app-b7634.appspot.com",
+      messagingSenderId: "70826301427",
+      appId: "1:70826301427:web:5fd7bfa7d6522fe827e486"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const table = document.getElementById('resultsTable');
+    const filterBtn = document.getElementById('filterBtn');
+    const payeeInput = document.getElementById('filterPayee');
+    const startInput = document.getElementById('filterStart');
+    const endInput = document.getElementById('filterEnd');
+    const totalCount = document.getElementById('totalCount');
+    const totalAmount = document.getElementById('totalAmount');
+
+    let allCheques = [];
+
+    async function fetchCheques() {
+      const q = query(collection(db, "cheques"), orderBy("timestamp", "desc"));
+      const snapshot = await getDocs(q);
+      allCheques = snapshot.docs.map(doc => doc.data());
+      renderTable(allCheques);
+    }
+
+    function renderTable(data) {
+      table.innerHTML = '';
+      let total = 0;
+      data.forEach(chq => {
+        total += parseFloat(chq.amount);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="p-2">${chq.chequeNumber}</td>
+          <td class="p-2">${chq.payee}</td>
+          <td class="p-2">${chq.date}</td>
+          <td class="p-2">$${parseFloat(chq.amount).toFixed(2)}</td>
+          <td class="p-2">${chq.settlement}</td>
+        `;
+        table.appendChild(row);
+      });
+      totalCount.textContent = data.length;
+      totalAmount.textContent = total.toFixed(2);
+    }
+
+    function applyFilters() {
+      const payee = payeeInput.value.toLowerCase();
+      const start = startInput.value ? new Date(startInput.value) : null;
+      const end = endInput.value ? new Date(endInput.value) : null;
+
+      const filtered = allCheques.filter(chq => {
+        const matchPayee = !payee || chq.payee.toLowerCase().includes(payee);
+        const chqDate = new Date(chq.date);
+        const matchStart = !start || chqDate >= start;
+        const matchEnd = !end || chqDate <= end;
+        return matchPayee && matchStart && matchEnd;
+      });
+
+      renderTable(filtered);
+    }
+
+    filterBtn.addEventListener('click', applyFilters);
+
+    document.getElementById('downloadCSV').addEventListener('click', () => {
+      let csv = 'Cheque Number,Payee,Date,Amount,Settlement\n';
+      const rows = allCheques.map(chq =>
+        `${chq.chequeNumber},"${chq.payee}",${chq.date},${chq.amount},${chq.settlement}`
+      );
+      csv += rows.join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'reporte_cheques.csv';
+      link.click();
+    });
+
+    fetchCheques();
+  </script>
+</body>
+</html>

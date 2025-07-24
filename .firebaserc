@@ -1,0 +1,11 @@
+{
+  "projects": {
+    "default": "sample-firebase-ai-app-b7634"
+  },
+  "targets": {
+    "sample-firebase-ai-app-b7634": {
+      "hosting": {}
+    }
+  },
+  "etags": {}
+}
