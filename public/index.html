@@ -2,86 +2,199 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lista Moderna</title>
+  <title>Generador de Cheques</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans">
-  <div class="max-w-7xl mx-auto py-10 px-6">
-    <!-- Encabezado -->
-    <h1 class="text-3xl font-semibold tracking-tight mb-6 flex items-center gap-2">
-      📋 <span>Lista de Cheques</span>
-    </h1>
-
-    <!-- Filtros -->
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-      <input id="filterPayee" type="text" placeholder="Filtrar por Payee" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-400 focus:border-blue-400" />
-      <input id="filterSettlement" type="text" placeholder="Filtrar por Settlement #" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-400 focus:border-blue-400" />
-      <input id="filterCheckNum" type="text" placeholder="Filtrar por Check #" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-400 focus:border-blue-400" />
-      <input id="filterStartDate" type="date" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-400 focus:border-blue-400" />
-      <input id="filterEndDate" type="date" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-400 focus:border-blue-400" />
-    </div>
-
-    <div class="mb-6">
-      <button id="applyFilters" class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-6 py-2 rounded-md font-medium shadow">Aplicar Filtros</button>
-    </div>
-
-    <!-- Tabla -->
-    <div class="overflow-x-auto">
-      <table class="min-w-full bg-white rounded-xl shadow-sm border border-gray-200">
-        <thead>
-          <tr class="bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wide border-b border-gray-200">
-            <th class="px-4 py-3 text-center border-r border-gray-200"><input type="checkbox" id="selectAll" /></th>
-            <th class="px-4 py-3 text-left border-r border-gray-200">Payee</th>
-            <th class="px-4 py-3 text-left border-r border-gray-200">Company</th>
-            <th class="px-4 py-3 text-center border-r border-gray-200">Settlement</th>
-            <th class="px-4 py-3 text-center border-r border-gray-200">Check #</th>
-            <th id="sortDateHeader" class="px-4 py-3 text-center cursor-pointer hover:bg-gray-50 border-r border-gray-200">
-              Date <span id="dateSortIcon">⬇️</span>
-            </th>
-            <th class="px-4 py-3 text-right border-r border-gray-200">Amount</th>
-            <th class="px-4 py-3 text-center">Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody" class="divide-y divide-gray-200 bg-white text-sm">
-          <!-- Cheques renderizados dinámicamente -->
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Controles -->
-    <div class="mt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-      <button onclick="window.location.href='formulario.html'" class="bg-white border border-gray-300 hover:bg-gray-50 text-sm px-4 py-2 rounded-md shadow-sm">🔙 Volver</button>
-
-      <p class="text-base font-semibold">Total: $<span id="totalAmount">0.00</span></p>
-
-      <div class="flex gap-2">
-        <button id="printSelected" class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded-md shadow">🖨️ Imprimir seleccionados</button>
-        <button id="printFilteredList" class="bg-green-500 hover:bg-green-600 text-white text-sm px-4 py-2 rounded-md shadow">📄 Imprimir lista filtrada</button>
-      </div>
-    </div>
+<body class="bg-gray-100 p-6 text-gray-800">
+  <!-- 🔴 Botón de logout -->
+  <div class="flex justify-end mb-4">
+    <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+      Cerrar sesión
+    </button>
   </div>
 
-  <!-- Ordenar por fecha -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const sortDateHeader = document.getElementById('sortDateHeader');
-      const dateSortIcon = document.getElementById('dateSortIcon');
+  <!-- Contenido principal -->
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4 text-center">Generador de Cheques</h1>
+    <form id="checkForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <label>Payee <input name="payee" type="text" class="w-full border p-2" required /></label>
+      <label>Date <input name="date" type="date" class="w-full border p-2" required /></label>
+      <label>Amount <input name="amount" type="number" step="0.01" class="w-full border p-2" required /></label>
+      <label>Settlement # <input name="settlement" type="text" class="w-full border p-2" required /></label>
+      <label>Check # <input name="checknum" type="text" class="w-full border p-2" /></label>
+      <label>
+  Company
+  <select name="company" class="w-full border p-2" required>
+    <option value="" disabled selected>— Selecciona una compañía —</option>
+    <option value="Impex">Impex</option>
+    <option value="Angunlo Aguilar">Angunlo Aguilar</option>
+    <option value="Hector Angulo">Hector Angulo</option>
+  </select>
+</label>
+      <label>City <input name="city" type="text" class="w-full border p-2" /></label>
+      <label>Country <input name="country" type="text" class="w-full border p-2" value="USA" /></label>
+    </form>
+    <div class="flex justify-end gap-4 mt-6">
+  <button type="button" id="addCheque" class="bg-green-600 text-white px-4 py-2 rounded">Guardar</button>
+  <a href="lista.html" class="bg-blue-700 text-white px-4 py-2 rounded">Ver lista</a>
+</div>
 
-      const savedSortAsc = localStorage.getItem('sortDateAsc') === 'true';
-      dateSortIcon.textContent = savedSortAsc ? '⬆️' : '⬇️';
+<!-- 🔐 Botón que solo verá el admin -->
+<div id="adminActions" class="mt-4 hidden text-right">
+  <a href="registro.html" class="bg-orange-500 text-white px-4 py-2 rounded">➕ Crear nuevo usuario</a>
+</div>
 
-      sortDateHeader.addEventListener('click', () => {
-        const current = localStorage.getItem('sortDateAsc') === 'true';
-        const newValue = !current;
-        localStorage.setItem('sortDateAsc', newValue);
-        dateSortIcon.textContent = newValue ? '⬆️' : '⬇️';
-        if (typeof renderTable === 'function') renderTable();
-      });
+
+  <!-- 🔌 Script principal con logout incluido -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      updateDoc,
+      getDoc,
+      getDocs,
+      query,
+      where,
+      doc
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyBMPR8Q0i6xCrJUzA0Eh6IR0i19-qoluhQ",
+  authDomain: "sample-firebase-ai-app-b7634.firebaseapp.com",
+  projectId: "sample-firebase-ai-app-b7634",
+  storageBucket: "sample-firebase-ai-app-b7634.appspot.com",
+  messagingSenderId: "70826301427",
+  appId: "1:70826301427:web:5fd7bfa7d6522fe827e486"
+};
+
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const form = document.getElementById('checkForm');
+    const addBtn = document.getElementById('addCheque');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const editId = localStorage.getItem('editChequeId');
+const formTitle = document.querySelector("h1");
+
+window.addEventListener("DOMContentLoaded", async () => {
+ if (editId) {
+  formTitle.textContent = "Editar Cheque";
+  addBtn.textContent = "Actualizar";
+  // no cambiamos el color, así se queda verde
+
+
+    try {
+      const chequeDoc = await getDoc(doc(db, "cheques", editId));
+      if (chequeDoc.exists()) {
+        const data = chequeDoc.data();
+        for (const [key, value] of Object.entries(data)) {
+          const input = form.elements.namedItem(key);
+          if (input) input.value = value;
+        }
+      } else {
+        alert("❌ El cheque que intentas editar no existe.");
+        localStorage.removeItem("editChequeId");
+        window.location.href = "lista.html";
+      }
+    } catch (error) {
+      alert("❌ Error al cargar datos del cheque.");
+    }
+  }
+});
+
+    let currentUser = null;
+    let empresaActual = "";
+
+    
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+
+    const userRef = doc(db, "usuarios", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (userSnap.exists()) {
+      const datos = userSnap.data();
+      empresaActual = datos.empresa || "";
+      const rolActual = datos.rol || "usuario";
+
+      if (!empresaActual) {
+        alert("Este usuario no está asignado a ninguna empresa.");
+        return location.href = "login.html";
+      }
+
+      // ✅ Mostrar botón solo si es admin
+      if (rolActual === "admin") {
+        document.getElementById("adminActions")?.classList.remove("hidden");
+      }
+
+      console.log("✅ Usuario autorizado:", datos);
+    } else {
+      alert("No tienes acceso autorizado.");
+      return location.href = "login.html";
+    }
+  } else {
+    // No está logueado
+    window.location.href = "login.html";
+  }
+});
+
+
+    addBtn?.addEventListener('click', async () => {
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const data = Object.fromEntries(new FormData(form));
+
+      if (parseFloat(data.amount) > 2500) {
+        const continuar = confirm("⚠️ El monto del cheque excede los $2,500. ¿Deseas continuar?");
+        if (!continuar) return;
+      }
+
+      try {
+        const chequesRef = collection(db, "cheques");
+        const q = query(chequesRef, where("settlement", "==", data.settlement), where("empresa", "==", empresaActual));
+        const snapshot = await getDocs(q);
+        const duplicate = snapshot.docs.find(docItem => docItem.id !== editId);
+        if (duplicate) return alert("⚠️ Ya existe un cheque con este número de Settlement.");
+
+        data.usuario = currentUser?.email || "desconocido";
+        data.empresa = empresaActual || "";
+
+        if (editId) {
+          await updateDoc(doc(db, "cheques", editId), data);
+          alert("✅ Cheque actualizado.");
+          localStorage.removeItem('editChequeId');
+          window.location.href = 'lista.html';
+        } else {
+          await addDoc(chequesRef, data);
+          alert("✅ Cheque guardado.");
+          form.reset();
+        }
+      } catch (e) {
+        alert("❌ Error al guardar: " + e.message);
+      }
+    });
+
+    logoutBtn?.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        window.location.href = "login.html";
+      } catch (error) {
+        alert("❌ Error al cerrar sesión: " + error.message);
+      }
     });
   </script>
-
-  <!-- Script principal -->
-  <script type="module" src="app.js"></script>
 </body>
 </html>
