@@ -15,11 +15,11 @@
 
     <!-- Filtros -->
     <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-      <input id="payeeFilter" type="text" placeholder="Filtrar por Payee" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-400 focus:border-blue-400" />
-      <input id="settlementFilter" type="text" placeholder="Filtrar por Settlement #" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-400 focus:border-blue-400" />
-      <input id="checkFilter" type="text" placeholder="Filtrar por Check #" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-400 focus:border-blue-400" />
-      <input id="startDate" type="date" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-400 focus:border-blue-400" />
-      <input id="endDate" type="date" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-400 focus:border-blue-400" />
+      <input id="filterPayee" type="text" placeholder="Filtrar por Payee" ... />
+      <input id="filterSettlement" type="text" placeholder="Filtrar por Settlement #" ... />
+      <input id="filterCheckNum" type="text" placeholder="Filtrar por Check #" ... />
+      <input id="filterStartDate" type="date" ... />
+      <input  id="filterEndDate" type="date" ... />
     </div>
 
     <div class="mb-6">
@@ -43,7 +43,10 @@
             <th class="px-4 py-3 text-center">Acciones</th>
           </tr>
         </thead>
-        <tbody id="chequeTable" class="text-sm divide-y divide-gray-200">
+        <tbody id="tableBody" class="divide-y divide-gray-200 bg-white text-sm">
+  <!-- Los cheques aparecerán aquí -->
+</tbody>
+
           <!-- Filas se renderizan dinámicamente -->
         </tbody>
       </table>
