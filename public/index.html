@@ -2,199 +2,74 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Generador de Cheques</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-6 text-gray-800">
+<body class="bg-gray-100 p-6 text-gray-800 font-sans">
   <!-- 🔴 Botón de logout -->
   <div class="flex justify-end mb-4">
-    <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+    <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md shadow">
       Cerrar sesión
     </button>
   </div>
 
   <!-- Contenido principal -->
-  <div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
-    <h1 class="text-2xl font-bold mb-4 text-center">Generador de Cheques</h1>
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-md">
+    <h1 class="text-3xl font-bold mb-6 text-center">Generador de Cheques</h1>
+
     <form id="checkForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <label>Payee <input name="payee" type="text" class="w-full border p-2" required /></label>
-      <label>Date <input name="date" type="date" class="w-full border p-2" required /></label>
-      <label>Amount <input name="amount" type="number" step="0.01" class="w-full border p-2" required /></label>
-      <label>Settlement # <input name="settlement" type="text" class="w-full border p-2" required /></label>
-      <label>Check # <input name="checknum" type="text" class="w-full border p-2" /></label>
-      <label>
-  Company
-  <select name="company" class="w-full border p-2" required>
-    <option value="" disabled selected>— Selecciona una compañía —</option>
-    <option value="Impex">Impex</option>
-    <option value="Angunlo Aguilar">Angunlo Aguilar</option>
-    <option value="Hector Angulo">Hector Angulo</option>
-  </select>
-</label>
-      <label>City <input name="city" type="text" class="w-full border p-2" /></label>
-      <label>Country <input name="country" type="text" class="w-full border p-2" value="USA" /></label>
+      <label class="text-sm">
+        Payee
+        <input name="payee" type="text" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm" required />
+      </label>
+      <label class="text-sm">
+        Date
+        <input name="date" type="date" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm" required />
+      </label>
+      <label class="text-sm">
+        Amount
+        <input name="amount" type="number" step="0.01" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm" required />
+      </label>
+      <label class="text-sm">
+        Settlement #
+        <input name="settlement" type="text" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm" required />
+      </label>
+      <label class="text-sm">
+        Check #
+        <input name="checknum" type="text" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm" />
+      </label>
+      <label class="text-sm">
+        Company
+        <select name="company" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm" required>
+          <option value="" disabled selected>— Selecciona una compañía —</option>
+          <option value="Impex">Impex</option>
+          <option value="Angunlo Aguilar">Angunlo Aguilar</option>
+          <option value="Hector Angulo">Hector Angulo</option>
+        </select>
+      </label>
+      <label class="text-sm">
+        City
+        <input name="city" type="text" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm" />
+      </label>
+      <label class="text-sm">
+        Country
+        <input name="country" type="text" value="USA" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm" />
+      </label>
     </form>
-    <div class="flex justify-end gap-4 mt-6">
-  <button type="button" id="addCheque" class="bg-green-600 text-white px-4 py-2 rounded">Guardar</button>
-  <a href="lista.html" class="bg-blue-700 text-white px-4 py-2 rounded">Ver lista</a>
-</div>
 
-<!-- 🔐 Botón que solo verá el admin -->
-<div id="adminActions" class="mt-4 hidden text-right">
-  <a href="registro.html" class="bg-orange-500 text-white px-4 py-2 rounded">➕ Crear nuevo usuario</a>
-</div>
+    <!-- Botones -->
+    <div class="flex flex-wrap justify-end items-center gap-3 mt-8">
+      <button type="button" id="addCheque" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md shadow text-sm font-medium">Guardar</button>
+      <a href="lista-modern.html" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow text-sm font-medium">Ver lista</a>
+    </div>
 
+    <!-- 🔐 Botón que solo verá el admin -->
+    <div id="adminActions" class="mt-4 hidden text-right">
+      <a href="registro.html" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md shadow text-sm font-medium">➕ Crear nuevo usuario</a>
+    </div>
+  </div>
 
-  <!-- 🔌 Script principal con logout incluido -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import {
-      getFirestore,
-      collection,
-      addDoc,
-      updateDoc,
-      getDoc,
-      getDocs,
-      query,
-      where,
-      doc
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
-    const firebaseConfig = {
-  apiKey: "AIzaSyBMPR8Q0i6xCrJUzA0Eh6IR0i19-qoluhQ",
-  authDomain: "sample-firebase-ai-app-b7634.firebaseapp.com",
-  projectId: "sample-firebase-ai-app-b7634",
-  storageBucket: "sample-firebase-ai-app-b7634.appspot.com",
-  messagingSenderId: "70826301427",
-  appId: "1:70826301427:web:5fd7bfa7d6522fe827e486"
-};
-
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    const form = document.getElementById('checkForm');
-    const addBtn = document.getElementById('addCheque');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const editId = localStorage.getItem('editChequeId');
-const formTitle = document.querySelector("h1");
-
-window.addEventListener("DOMContentLoaded", async () => {
- if (editId) {
-  formTitle.textContent = "Editar Cheque";
-  addBtn.textContent = "Actualizar";
-  // no cambiamos el color, así se queda verde
-
-
-    try {
-      const chequeDoc = await getDoc(doc(db, "cheques", editId));
-      if (chequeDoc.exists()) {
-        const data = chequeDoc.data();
-        for (const [key, value] of Object.entries(data)) {
-          const input = form.elements.namedItem(key);
-          if (input) input.value = value;
-        }
-      } else {
-        alert("❌ El cheque que intentas editar no existe.");
-        localStorage.removeItem("editChequeId");
-        window.location.href = "lista.html";
-      }
-    } catch (error) {
-      alert("❌ Error al cargar datos del cheque.");
-    }
-  }
-});
-
-    let currentUser = null;
-    let empresaActual = "";
-
-    
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    currentUser = user;
-
-    const userRef = doc(db, "usuarios", user.uid);
-    const userSnap = await getDoc(userRef);
-
-    if (userSnap.exists()) {
-      const datos = userSnap.data();
-      empresaActual = datos.empresa || "";
-      const rolActual = datos.rol || "usuario";
-
-      if (!empresaActual) {
-        alert("Este usuario no está asignado a ninguna empresa.");
-        return location.href = "login.html";
-      }
-
-      // ✅ Mostrar botón solo si es admin
-      if (rolActual === "admin") {
-        document.getElementById("adminActions")?.classList.remove("hidden");
-      }
-
-      console.log("✅ Usuario autorizado:", datos);
-    } else {
-      alert("No tienes acceso autorizado.");
-      return location.href = "login.html";
-    }
-  } else {
-    // No está logueado
-    window.location.href = "login.html";
-  }
-});
-
-
-    addBtn?.addEventListener('click', async () => {
-      if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-      }
-
-      const data = Object.fromEntries(new FormData(form));
-
-      if (parseFloat(data.amount) > 2500) {
-        const continuar = confirm("⚠️ El monto del cheque excede los $2,500. ¿Deseas continuar?");
-        if (!continuar) return;
-      }
-
-      try {
-        const chequesRef = collection(db, "cheques");
-        const q = query(chequesRef, where("settlement", "==", data.settlement), where("empresa", "==", empresaActual));
-        const snapshot = await getDocs(q);
-        const duplicate = snapshot.docs.find(docItem => docItem.id !== editId);
-        if (duplicate) return alert("⚠️ Ya existe un cheque con este número de Settlement.");
-
-        data.usuario = currentUser?.email || "desconocido";
-        data.empresa = empresaActual || "";
-
-        if (editId) {
-          await updateDoc(doc(db, "cheques", editId), data);
-          alert("✅ Cheque actualizado.");
-          localStorage.removeItem('editChequeId');
-          window.location.href = 'lista.html';
-        } else {
-          await addDoc(chequesRef, data);
-          alert("✅ Cheque guardado.");
-          form.reset();
-        }
-      } catch (e) {
-        alert("❌ Error al guardar: " + e.message);
-      }
-    });
-
-    logoutBtn?.addEventListener("click", async () => {
-      try {
-        await signOut(auth);
-        window.location.href = "login.html";
-      } catch (error) {
-        alert("❌ Error al cerrar sesión: " + error.message);
-      }
-    });
-  </script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
