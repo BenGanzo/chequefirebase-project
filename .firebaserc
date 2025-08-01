@@ -1,10 +1,19 @@
 {
   "projects": {
-    "default": "sample-firebase-ai-app-b7634"
+    "default": "sample-firebase-ai-app-b7634",
+    "gamesol": "sample-firebase-ai-app-b7634",
+    "prod": "sample-firebase-ai-app-b7634"
   },
   "targets": {
     "sample-firebase-ai-app-b7634": {
-      "hosting": {}
+      "hosting": {
+        "gamesol-prod": [
+          "gamesol-prod"
+        ],
+        "impex-cheque-app": [
+          "impex-cheque-app"
+        ]
+      }
     }
   },
   "etags": {}
