@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista Moderna</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+  <div class="max-w-7xl mx-auto py-10 px-6">
+    <!-- Encabezado -->
+    <h1 class="text-3xl font-semibold tracking-tight mb-6 flex items-center gap-2">
+      📋 <span>Lista de Cheques</span>
+    </h1>
+
+    <!-- Filtros -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+      <input id="payeeFilter" type="text" placeholder="Filtrar por Payee" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-400 focus:border-blue-400" />
+      <input id="settlementFilter" type="text" placeholder="Filtrar por Settlement #" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-400 focus:border-blue-400" />
+      <input id="checkFilter" type="text" placeholder="Filtrar por Check #" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-400 focus:border-blue-400" />
+      <input id="startDate" type="date" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-400 focus:border-blue-400" />
+      <input id="endDate" type="date" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-400 focus:border-blue-400" />
+    </div>
+
+    <div class="mb-6">
+      <button id="applyFilters" class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-6 py-2 rounded-md font-medium shadow">Aplicar Filtros</button>
+    </div>
+
+    <!-- Tabla -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white rounded-xl shadow-sm border border-gray-200">
+        <thead>
+          <tr class="bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wide border-b border-gray-200">
+            <th class="px-4 py-3 text-center border-r border-gray-200"><input type="checkbox" id="selectAll" /></th>
+            <th class="px-4 py-3 text-left border-r border-gray-200">Payee</th>
+            <th class="px-4 py-3 text-left border-r border-gray-200">Company</th>
+            <th class="px-4 py-3 text-center border-r border-gray-200">Settlement</th>
+            <th class="px-4 py-3 text-center border-r border-gray-200">Check #</th>
+            <th id="sortDateHeader" class="px-4 py-3 text-center cursor-pointer hover:bg-gray-50 border-r border-gray-200">
+              Date <span id="dateSortIcon">⬇️</span>
+            </th>
+            <th class="px-4 py-3 text-right border-r border-gray-200">Amount</th>
+            <th class="px-4 py-3 text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="chequeTable" class="text-sm divide-y divide-gray-200">
+          <!-- Filas se renderizan dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Controles -->
+    <div class="mt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      <button onclick="window.location.href='index.html'" class="bg-white border border-gray-300 hover:bg-gray-50 text-sm px-4 py-2 rounded-md shadow-sm">🔙 Volver</button>
+
+      <p class="text-base font-semibold">Total: $<span id="totalAmount">0.00</span></p>
+
+      <div class="flex gap-2">
+        <button id="printSelected" class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded-md shadow">🖨️ Imprimir seleccionados</button>
+        <button id="printFilteredList" class="bg-green-500 hover:bg-green-600 text-white text-sm px-4 py-2 rounded-md shadow">📄 Imprimir lista filtrada</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ordenar por fecha -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const sortDateHeader = document.getElementById('sortDateHeader');
+      const dateSortIcon = document.getElementById('dateSortIcon');
+
+      const savedSortAsc = localStorage.getItem('sortDateAsc') === 'true';
+      dateSortIcon.textContent = savedSortAsc ? '⬆️' : '⬇️';
+
+      sortDateHeader.addEventListener('click', () => {
+        const current = localStorage.getItem('sortDateAsc') === 'true';
+        const newValue = !current;
+        localStorage.setItem('sortDateAsc', newValue);
+        dateSortIcon.textContent = newValue ? '⬆️' : '⬇️';
+        if (typeof renderTable === 'function') renderTable();
+      });
+    });
+  </script>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
